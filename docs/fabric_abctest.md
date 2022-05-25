@@ -5,6 +5,12 @@
     - [NFT 連携シナリオ](#nft-連携シナリオ)
     - [計画](#計画)
   - [fabric-samplesのインストール](#fabric-samplesのインストール)
+  - [シナリオの専用 Chaincode「abctest」作成と起動](#シナリオの専用-chaincodeabctest作成と起動)
+    - [Chaincode 作成](#chaincode-作成)
+    - [abctest の Network 起動](#abctest-の-network-起動)
+    - [cli ツールでシナリオ実行](#cli-ツールでシナリオ実行)
+  - [REST API 開発](#rest-api-開発)
+  - [Odoo モジュール開発](#odoo-モジュール開発)
 
 ## 目標
 
@@ -84,16 +90,167 @@ $ cd ~/prjs/sdl/bc/fabric-2.4.3
 $ curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.4.3 1.5.2
 ```
 
-test network 起動
+## シナリオの専用 Chaincode「abctest」作成と起動
 
-```
-cd fabric-samples/test-network
-./network.sh up createChannel -c mychannel -ca
-```
+### Chaincode 作成
 
-CLI 環境設定
+シナリオ専用の ChainCode を先に作成しましたので、下記の命令で Github から fabric-sample フォルダにダンロードします
 
 ```sh
-export PATH=${PWD}/../bin:${PWD}:$PATH
-export FABRIC_CFG_PATH=$PWD/../config/
+$ cd fabric-samples
+$ git clone https://github.com/telesoho/abctest.git
 ```
+
+### abctest の Network 起動
+
+```sh
+$ cd abctest
+$ ./networkStart.sh
+```
+
+![](images/fabric_abctest.md_image_20220525233732.png)
+
+### cli ツールでシナリオ実行
+
+npm がインストールされてない場合は、NPM を先にインストールします
+
+```sh
+$ sudo apt install npm
+
+```
+
+cli ツールを Build します
+
+```sh
+$ cd cli-typescript
+$ npm run build
+```
+
+1. ユーザ作成
+   ・ユーザ：管理者ユーザ、ユーザ A、ユーザ B ユーザ C
+
+システム管理員(admin)作成：
+
+```sh
+$ node dist/enrollAdmin.js
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Successfully enrolled admin user "admin" and imported it into the wallet
+```
+
+管理者ユーザ「telesoho」作成：
+
+```sh
+$ node dist/registerUser.js telesoho admin
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Successfully registered and enrolled admin user telesoho and imported it into the wallet
+```
+
+ユーザ A「userA」作成：
+
+```sh
+$ node dist/registerUser.js userA user
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Successfully registered and enrolled admin user userA and imported it into the wallet
+```
+
+ユーザ B「userB」作成：
+
+```sh
+$ node dist/registerUser.js userB user
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Successfully registered and enrolled admin user userB and imported it into the wallet
+```
+
+ユーザ C「userC」作成：
+
+```sh
+$ node dist/registerUser.js userC user
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Successfully registered and enrolled admin user userC and imported it into the wallet
+```
+
+2. 既存のアセットを表示します
+
+```sh
+$ node dist/query.js telesoho
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Transaction has been evaluated, result is: [{"Owner":"Tomoko","Type":"money","Value":100},{"Owner":"telesoho","Type":"money","Value":100}]
+```
+
+3. 管理者ユーザがユーザ A に対して新規アセットを付与し Value 値は 100 とする。
+
+```sh
+$ node dist/invoke.js telesoho CreateAsset money userA 100
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Transaction has been submitted
+```
+
+結果を確認：
+
+![](images/fabric_abctest.md_image_20220526000011.png)
+
+4. 管理者ユーザがユーザ B に対して新規アセットを付与し、Value 値は 80 とする。
+
+```sh
+$ node dist/invoke.js telesoho CreateAsset money userB 80
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Transaction has been submitted
+```
+
+5. 管理者ユーザがユーザ C に対して新規アセットを付与し、Value 値は 50 とする。
+
+```sh
+$ node dist/invoke.js telesoho CreateAsset money userC 50
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Transaction has been submitted
+```
+
+作成したアセットを確認します。
+
+![](images/fabric_abctest.md_image_20220526000319.png)
+
+6. ユーザ A がユーザ B に Value を 60 譲渡する
+
+```sh
+$ node dist/invoke.js userA TransferTo money userB 60
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Transaction has been submitted
+```
+
+（B>A および C>A を確認）
+
+![](images/fabric_abctest.md_image_20220526001800.png)
+
+7. ユーザ C がユーザ A に Value を 50 譲渡
+
+```sh
+$ node dist/invoke.js userC TransferTo money userA 50
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Transaction has been submitted
+```
+
+（A>C および B>A を確認）
+
+![](images/fabric_abctest.md_image_20220526001949.png)
+
+8. 管理者ユーザがユーザ C に対し、新規アセットを付与し、Value 値を 100 とする。
+
+```sh
+$ node dist/invoke.js telesoho CreateAsset kabu userC 100
+Wallet path: /data/telesoho/prjs/sdl/bc/fabric-2.4.3/fabric-samples/abctest/wallet
+Transaction has been submitted
+```
+
+仕様：異なるアセットのバリューは合計して評価する
+
+（C ＞ B を確認する。）
+
+![](images/fabric_abctest.md_image_20220526002159.png)
+
+## REST API 開発
+
+未完成
+
+## Odoo モジュール開発
+
+未完成

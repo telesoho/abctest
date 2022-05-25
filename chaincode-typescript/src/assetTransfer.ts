@@ -162,7 +162,9 @@ export class AbctestContract extends Contract {
     public async TransferTo(ctx: Context, type: string, toOwner: string, value: number): Promise<string> {
 
         const cid = ctx.clientIdentity;
-        const owner = cid.getAttributeValue('abtest.username');       
+        console.log(cid);
+        const owner = cid.getAttributeValue("abctest.username");
+        console.log(owner);
         const assetFromString = await this.ReadAsset(ctx, type, owner);
         const assetToString = await this.ReadAsset(ctx, type, toOwner);
 

@@ -10,6 +10,8 @@
     - [abctest の Network 起動](#abctest-の-network-起動)
     - [cli ツールでシナリオ実行](#cli-ツールでシナリオ実行)
   - [REST API 開発](#rest-api-開発)
+    - [API 設計](#api-設計)
+    - [シナリオテスト履歴](#シナリオテスト履歴)
   - [Odoo モジュール開発](#odoo-モジュール開発)
 
 ## 目標
@@ -249,7 +251,71 @@ Transaction has been submitted
 
 ## REST API 開発
 
-未完成
+### API 設計
+
+- ユーザ作成
+
+```ini
+POST {{apiUrl}}/user HTTP/1.1
+content-type: application/json
+X-Api-Key: {{api-key}}
+
+{
+    "username":"admin@odoo.com",
+    "role":"admin"
+}
+```
+
+- アセット表示
+
+```ini
+### アセット表示
+
+GET {{apiUrl}}/assets HTTP/1.1
+X-Api-Key: {{api-key}}
+
+```
+
+- アセット作成
+
+```ini
+
+### 管理者ユーザがユーザ B に対して新規アセットを付与し、Value 値は 80 とする。
+POST {{apiUrl}}/assets HTTP/1.1
+content-type: application/json
+mspId:admin@odoo.com
+X-Api-Key: {{api-key}}
+
+{
+    "Type": "money",
+    "Owner": "userB@odoo.com",
+    "Value": 80
+}
+
+```
+
+- Value 譲渡
+
+```ini
+
+### 管理者ユーザがユーザ C に対し、新規アセットを付与し、Value 値を 100 とする。
+
+POST {{apiUrl}}/assets HTTP/1.1
+content-type: application/json
+mspId:admin@odoo.com
+X-Api-Key: {{api-key}}
+
+{
+    "Type": "kabu",
+    "Owner": "userC@odoo.com",
+    "Value": 100
+}
+
+```
+
+### シナリオテスト履歴
+
+[シナリオテスト履歴](../rest-api-typescript/abctest.http)
 
 ## Odoo モジュール開発
 

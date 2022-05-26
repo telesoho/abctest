@@ -10,7 +10,7 @@ import { Application } from 'express';
 import { Contract, Transaction } from 'fabric-network';
 import * as config from './config';
 import { getRetryAction, RetryAction } from './errors';
-import { submitTransaction } from './fabric';
+import { submitTransaction, createWallet, createGateway, getNetwork,getContracts  } from './fabric';
 import { logger } from './logger';
 
 export type JobData = {
@@ -116,7 +116,20 @@ export const processSubmitTransactionJob = async (
 ): Promise<JobResult> => {
   logger.debug({ jobId: job.id, jobName: job.name }, 'Processing job');
 
-  const contract = app.locals[job.data.mspid]?.assetContract as Contract;
+  const mspid = job.data.mspid;
+  let contract = app.locals[mspid]?.assetContract as Contract
+  if (contract === undefined) {
+    const wallet = await createWallet();
+    const gatewayOrg1 = await createGateway(
+      config.connectionProfileOrg1,
+      mspid,
+      wallet
+    );
+    const networkOrg1 = await getNetwork(gatewayOrg1);
+    const contractsOrg1 = await getContracts(networkOrg1); 
+    contract = contractsOrg1?.assetContract as Contract;
+  }
+
   if (contract === undefined) {
     logger.error(
       { jobId: job.id, jobName: job.name },

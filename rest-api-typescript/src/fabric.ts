@@ -17,6 +17,22 @@ import * as config from './config';
 import { logger } from './logger';
 import { handleError } from './errors';
 import * as protos from 'fabric-protos';
+import * as path from 'path';
+
+const buildWallet = async (walletPath: string): Promise<Wallet> => {
+  // Create a new  wallet : Note that wallet is for managing identities.
+  let wallet: Wallet;
+  if (walletPath) {
+    wallet = await Wallets.newFileSystemWallet(walletPath);
+    console.log(`Built a file system wallet at ${walletPath}`);
+  } else {
+    wallet = await Wallets.newInMemoryWallet();
+    console.log('Built an in memory wallet');
+  }
+
+  return wallet;
+};
+
 
 /**
  * Creates an in memory wallet to hold credentials for an Org1 and Org2 user
@@ -28,32 +44,36 @@ import * as protos from 'fabric-protos';
  * or it could use credentials supplied in the REST requests
  */
 export const createWallet = async (): Promise<Wallet> => {
-  const wallet = await Wallets.newInMemoryWallet();
+  const walletPath = path.resolve(process.cwd(), '../wallet');
+  const wallet = await buildWallet(walletPath);
 
-  const org1Identity = {
-    credentials: {
-      certificate: config.certificateOrg1,
-      privateKey: config.privateKeyOrg1,
-    },
-    mspId: config.mspIdOrg1,
-    type: 'X.509',
-  };
+  if(!await wallet.get(config.mspIdOrg1)) {
+    const org1Identity = {
+      credentials: {
+        certificate: config.certificateOrg1,
+        privateKey: config.privateKeyOrg1,
+      },
+      mspId: config.mspIdOrg1,
+      type: 'X.509',
+    };
+    await wallet.put(config.mspIdOrg1, org1Identity);
+  }
 
-  await wallet.put(config.mspIdOrg1, org1Identity);
-
-  const org2Identity = {
-    credentials: {
-      certificate: config.certificateOrg2,
-      privateKey: config.privateKeyOrg2,
-    },
-    mspId: config.mspIdOrg2,
-    type: 'X.509',
-  };
-
-  await wallet.put(config.mspIdOrg2, org2Identity);
+  if(!await wallet.get(config.mspIdOrg2)) {
+    const org2Identity = {
+      credentials: {
+        certificate: config.certificateOrg2,
+        privateKey: config.privateKeyOrg2,
+      },
+      mspId: config.mspIdOrg2,
+      type: 'X.509',
+    };
+    await wallet.put(config.mspIdOrg2, org2Identity);
+  }
 
   return wallet;
 };
+
 
 /**
  * Create a Gateway connection

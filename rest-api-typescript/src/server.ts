@@ -5,12 +5,14 @@
 import express, { Application, NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
-import passport from 'passport';
 import pinoMiddleware from 'pino-http';
 import { assetsRouter } from './assets.router';
-import { authenticateApiKey, fabricAPIKeyStrategy } from './auth';
+import passport, {
+  authenticateApiKey,
+} from './middlewares/auth';
 import { healthRouter } from './health.router';
 import { jobsRouter } from './jobs.router';
+import { userRouter } from './user.router';
 import { logger } from './logger';
 import { transactionsRouter } from './transactions.router';
 import cors from 'cors';
@@ -43,9 +45,6 @@ export const createServer = async (): Promise<Application> => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  //define passport startegy
-  passport.use(fabricAPIKeyStrategy);
-
   //initialize passport js
   app.use(passport.initialize());
 
@@ -62,6 +61,8 @@ export const createServer = async (): Promise<Application> => {
   }
 
   app.use('/', healthRouter);
+  // app.use('/api/user', authenticateJwt, userRouter);
+  app.use('/api/user', authenticateApiKey, userRouter);
   app.use('/api/assets', authenticateApiKey, assetsRouter);
   app.use('/api/jobs', authenticateApiKey, jobsRouter);
   app.use('/api/transactions', authenticateApiKey, transactionsRouter);

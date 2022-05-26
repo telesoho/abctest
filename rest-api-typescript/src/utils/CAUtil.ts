@@ -6,6 +6,7 @@
 
 import FabricCAServices from 'fabric-ca-client';
 import { Wallet } from 'fabric-network';
+import * as config from '../config';
 
 const adminUserId = 'admin';
 const adminUserPasswd = 'adminpw';
@@ -73,7 +74,8 @@ const registerAndEnrollUser = async (
   wallet: Wallet,
   orgMspId: string,
   userId: string,
-  affiliation: string
+  affiliation: string, 
+  role: string
 ): Promise<void> => {
   try {
     // Check to see if we've already enrolled the user
@@ -92,7 +94,7 @@ const registerAndEnrollUser = async (
         'An identity for the admin user does not exist in the wallet'
       );
       console.log('Enroll the admin user before retrying');
-      return;
+      throw new Error("An identity for the admin user does not exist in the wallet");
     }
 
     // build a user object for authenticating with the CA
@@ -108,12 +110,14 @@ const registerAndEnrollUser = async (
         affiliation,
         enrollmentID: userId,
         role: 'client',
+        attrs: [{name:'abctest.username', value:userId, ecert:true},{name:'abctest.role', value:role, ecert:true}]
       },
       adminUser
     );
     const enrollment = await caClient.enroll({
       enrollmentID: userId,
       enrollmentSecret: secret,
+      attr_reqs: [{ name: 'abctest.role', optional: false },{name:'abctest.username',optional:false}] 
     });
     const x509Identity = {
       credentials: {

@@ -17,6 +17,17 @@ GET {{baseUrl}}/ready HTTP/1.1
 GET {{baseUrl}}/live HTTP/1.1
 
 
+### User API
+
+POST {{apiUrl}}/user HTTP/1.1
+content-type: application/json
+X-Api-Key: {{api-key}}
+
+{
+    "username":"telesoho",
+    "role":"admin"
+}
+
 ### Init initLedger
 
 POST {{apiUrl}}/assets/init HTTP/1.1

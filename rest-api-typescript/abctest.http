@@ -1,0 +1,475 @@
+// Demo file for use with REST Client for Visual Studio Code
+// See https://github.com/Huachao/vscode-restclient
+// 
+// Edit the values below to match your environment if required
+@hostname = localhost
+@port = {{$dotenv PORT}}
+@baseUrl = http://{{hostname}}:{{port}}
+@apiUrl = {{baseUrl}}/api
+@api-key = {{$dotenv ORG1_APIKEY}}
+
+### 管理者ユーザ作成
+
+POST {{apiUrl}}/user HTTP/1.1
+content-type: application/json
+X-Api-Key: {{api-key}}
+
+{
+    "username":"admin@odoo.com",
+    "role":"admin"
+}
+
+### 結果
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 44
+ETag: W/"2c-6GNFhpSaudaldvEkBN8F5EFg+wA"
+Date: Thu, 26 May 2022 17:10:31 GMT
+Connection: close
+
+{
+  "username": "admin@odoo.com",
+  "role": "admin"
+}
+
+
+### ユーザ A作成
+POST {{apiUrl}}/user HTTP/1.1
+content-type: application/json
+X-Api-Key: {{api-key}}
+
+{
+    "username":"userA@odoo.com",
+    "role":"user"
+}
+
+### 結果
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 43
+ETag: W/"2b-BzXC6cCkkdPIKmf8MsLUoDfbk5U"
+Date: Thu, 26 May 2022 17:11:46 GMT
+Connection: close
+
+{
+  "username": "userA@odoo.com",
+  "role": "user"
+}
+
+### ユーザ B作成
+POST {{apiUrl}}/user HTTP/1.1
+content-type: application/json
+X-Api-Key: {{api-key}}
+
+{
+    "username":"userB@odoo.com",
+    "role":"user"
+}
+
+### 結果
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 43
+ETag: W/"2b-fcP5MavZLaLWx1roQDTgJ6C1MdM"
+Date: Thu, 26 May 2022 17:12:06 GMT
+Connection: close
+
+{
+  "username": "userB@odoo.com",
+  "role": "user"
+}
+
+### ユーザ C
+POST {{apiUrl}}/user HTTP/1.1
+content-type: application/json
+X-Api-Key: {{api-key}}
+
+{
+    "username":"userC@odoo.com",
+    "role":"user"
+}
+
+### 結果
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 43
+ETag: W/"2b-E9q29CojjawcSuYDhT/s8cG5RnY"
+Date: Thu, 26 May 2022 17:12:19 GMT
+Connection: close
+
+{
+  "username": "userC@odoo.com",
+  "role": "user"
+}
+
+### アクション
+
+### 管理者ユーザがユーザ A に対して新規アセットを付与し Value 値は 100 とする。
+POST {{apiUrl}}/assets HTTP/1.1
+content-type: application/json
+mspId:admin@odoo.com
+X-Api-Key: {{api-key}}
+
+{
+    "Type": "money",
+    "Owner": "userA@odoo.com",
+    "Value": 100
+}
+
+### 結果
+HTTP/1.1 202 Accepted
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 72
+ETag: W/"48-Ql4jpvQeSJyhf40BaMpR8Axc/lY"
+Date: Thu, 26 May 2022 17:15:05 GMT
+Connection: close
+
+{
+  "status": "Accepted",
+  "jobId": "1",
+  "timestamp": "2022-05-26T17:15:05.014Z"
+}
+
+### アセット表示
+
+GET {{apiUrl}}/assets HTTP/1.1
+X-Api-Key: {{api-key}}
+
+### 結果
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 149
+ETag: W/"95-b3s393xL3+OR1Nt6CtMKzfdePH4"
+Date: Thu, 26 May 2022 18:50:02 GMT
+Connection: close
+
+[
+  {
+    "Owner": "Tomoko",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "telesoho",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "userA@odoo.com",
+    "Type": "money",
+    "Value": 100
+  }
+]
+
+### 管理者ユーザがユーザ B に対して新規アセットを付与し、Value 値は 80 とする。
+POST {{apiUrl}}/assets HTTP/1.1
+content-type: application/json
+mspId:admin@odoo.com
+X-Api-Key: {{api-key}}
+
+{
+    "Type": "money",
+    "Owner": "userB@odoo.com",
+    "Value": 80
+}
+
+### アセット表示
+
+GET {{apiUrl}}/assets HTTP/1.1
+X-Api-Key: {{api-key}}
+
+### 結果
+
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 202
+ETag: W/"ca-COfmy8MenjODR93hq1J4YTor9J8"
+Date: Thu, 26 May 2022 18:51:51 GMT
+Connection: close
+
+[
+  {
+    "Owner": "Tomoko",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "telesoho",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "userA@odoo.com",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "userB@odoo.com",
+    "Type": "money",
+    "Value": 80
+  }
+]
+
+### 管理者ユーザがユーザ C に対して新規アセットを付与し、Value 値は 50 とする。
+
+POST {{apiUrl}}/assets HTTP/1.1
+content-type: application/json
+mspId:admin@odoo.com
+X-Api-Key: {{api-key}}
+
+{
+    "Type": "money",
+    "Owner": "userC@odoo.com",
+    "Value": 50
+}
+
+### アセット表示
+
+GET {{apiUrl}}/assets HTTP/1.1
+X-Api-Key: {{api-key}}
+
+### 結果
+
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 320
+ETag: W/"140-z4Z593wrqrDRqNd3loo0EmILc7o"
+Date: Thu, 26 May 2022 18:54:36 GMT
+Connection: close
+
+[
+  {
+    "Owner": "Tomoko",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "userC@odoo.com",
+    "Type": "money",
+    "Value": 50
+  },
+  {
+    "Owner": "telesoho",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "userA@odoo.com",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "userB@odoo.com",
+    "Type": "money",
+    "Value": 80
+  }
+]
+
+### ユーザ A がユーザ B に Value を 60 譲渡する
+
+PUT {{apiUrl}}/assets/TransferTo HTTP/1.1
+content-type: application/json
+mspId:userA@odoo.com
+X-Api-Key: {{api-key}}
+
+{
+    "Type": "money",
+    "Owner": "userB@odoo.com",
+    "Value": 60
+}
+
+
+### アセット表示
+
+GET {{apiUrl}}/assets HTTP/1.1
+X-Api-Key: {{api-key}}
+
+### 結果
+
+# （B>A および C>A を確認）
+
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 320
+ETag: W/"140-frpgEthNnOyiJ7Q1hLLFrDIw0t4"
+Date: Thu, 26 May 2022 19:05:40 GMT
+Connection: close
+
+[
+  {
+    "Owner": "Tomoko",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "userC@odoo.com",
+    "Type": "money",
+    "Value": 50
+  },
+  {
+    "Owner": "telesoho",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "userA@odoo.com",
+    "Type": "money",
+    "Value": 40
+  },
+  {
+    "Owner": "userB@odoo.com",
+    "Type": "money",
+    "Value": 140
+  }
+]
+
+
+### ユーザ C がユーザ A に Value を 50 譲渡
+
+PUT {{apiUrl}}/assets/TransferTo HTTP/1.1
+content-type: application/json
+mspId:userC@odoo.com
+X-Api-Key: {{api-key}}
+
+{
+    "Type": "money",
+    "Owner": "userA@odoo.com",
+    "Value": 50
+}
+
+
+# （A>C および B>A を確認）
+
+### アセット表示
+
+GET {{apiUrl}}/assets HTTP/1.1
+X-Api-Key: {{api-key}}
+
+### 結果
+
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 372
+ETag: W/"174-NoWNHUyRLARvbYCg0Y/aUWFpbaA"
+Date: Thu, 26 May 2022 19:09:24 GMT
+Connection: close
+
+[
+  {
+    "Owner": "Tomoko",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "telesoho",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "userA@odoo.com",
+    "Type": "money",
+    "Value": 90
+  },
+  {
+    "Owner": "userB@odoo.com",
+    "Type": "money",
+    "Value": 140
+  },
+  {
+    "Owner": "userC@odoo.com",
+    "Type": "money",
+    "Value": 0
+  }
+]
+
+
+### 管理者ユーザがユーザ C に対し、新規アセットを付与し、Value 値を 100 とする。
+
+POST {{apiUrl}}/assets HTTP/1.1
+content-type: application/json
+mspId:admin@odoo.com
+X-Api-Key: {{api-key}}
+
+{
+    "Type": "kabu",
+    "Owner": "userC@odoo.com",
+    "Value": 100
+}
+
+
+### アセット表示
+
+GET {{apiUrl}}/assets HTTP/1.1
+X-Api-Key: {{api-key}}
+
+### 結果
+
+# 仕様：異なるアセットのバリューは合計して評価する
+
+# （C ＞ B を確認する。）
+
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 425
+ETag: W/"1a9-6MVyByqOJUwr9Oyx+DEYKofxl8Y"
+Date: Thu, 26 May 2022 19:11:59 GMT
+Connection: close
+
+[
+  {
+    "Owner": "Tomoko",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "telesoho",
+    "Type": "money",
+    "Value": 100
+  },
+  {
+    "Owner": "userA@odoo.com",
+    "Type": "money",
+    "Value": 90
+  },
+  {
+    "Owner": "userB@odoo.com",
+    "Type": "money",
+    "Value": 140
+  },
+  {
+    "Owner": "userC@odoo.com",
+    "Type": "kabu",
+    "Value": 100
+  },
+  {
+    "Owner": "userC@odoo.com",
+    "Type": "money",
+    "Value": 0
+  }
+]
+
+
+
+

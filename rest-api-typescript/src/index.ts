@@ -22,6 +22,7 @@ import { logger } from './logger';
 import { createServer } from './server';
 import { isMaxmemoryPolicyNoeviction } from './redis';
 import { Queue, QueueScheduler, Worker } from 'bullmq';
+import {buildCAClient, enrollAdmin} from './utils/CAUtil';
 
 let jobQueue: Queue | undefined;
 let jobQueueWorker: Worker | undefined;
@@ -40,6 +41,20 @@ async function main() {
 
   logger.info('Connecting to Fabric network with org1 mspid');
   const wallet = await createWallet();
+
+  // build an in memory object with the network configuration (also known as a connection profile)
+  const ccp = config.connectionProfileOrg1;
+
+  // build an instance of the fabric ca services client based on
+  // the information in the network configuration
+  const caClient = buildCAClient(ccp, 'ca.org1.example.com');
+
+  // in a real application this would be done on an administrative flow, and only once
+  await enrollAdmin(caClient, wallet, config.mspIdOrg1);
+
+  // in a real application this would be done only when a new user was required to be added
+  // and would be part of an administrative flow
+  // await registerAndEnrollUser(caClient, wallet, mspOrg1, org1UserId, 'org1.department1');
 
   const gatewayOrg1 = await createGateway(
     config.connectionProfileOrg1,
@@ -66,6 +81,7 @@ async function main() {
   const contractsOrg2 = await getContracts(networkOrg2);
 
   app.locals[config.mspIdOrg2] = contractsOrg2;
+  app.locals.wallet = wallet;
 
   logger.info('Initialising submit job queue');
   jobQueue = initJobQueue();
